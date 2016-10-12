@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html">
+
+<head>
+    <title>Hello Spring Boot!</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link href="http://cdn.jsdelivr.net/webjars/bootstrap/3.3.6/css/bootstrap.min.css"
+          th:href="@{/webjars/bootstrap/3.3.6/css/bootstrap.min.css}"
+          rel="stylesheet" media="screen" />
+    <link href="../static/css/main.css"
+          th:href="@{/css/main.css}"
+          rel="stylesheet" media="screen" />
+
+	<link href="https://fonts.googleapis.com/css?family=Fjalla+One|Rubik+One" rel="stylesheet" />
+    <script src="http://cdn.jsdelivr.net/webjars/jquery/2.2.4/jquery.min.js"
+            th:src="@{/webjars/jquery/2.2.4/jquery.min.js}"></script>
+
+    <script src="http://cdn.jsdelivr.net/webjars/bootstrap/3.3.6/js/bootstrap.min.js"
+            th:src="@{/webjars/bootstrap/3.3.6/js/bootstrap.min.js}"></script>
+
+
+
+</head>
+<body>
+<!-- Header -->
+<!--
+<div th:replace="fragments/header :: header">
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">Static header</a>
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li class="active"><a href="#">Home</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+-->
+
+
+    <!--<div class="hero-unit">-->
+        <!--<h1>Test</h1>-->
+    <!--</div>-->
+
+<section class="contenido" th:unless="${session.username != null}">
+
+    <div class="login" th:unless="${session.username != null}">
+        <h2 class="titulo titulo-small" style="text-align: center;">Conéctate con Slack.</h2>
+        <div class="row" style="text-align: center;">
+            <div class="col-md-12" style="padding-top:15px;">
+                <a th:href="${slack}">
+                    <img alt="Sign in with Slack" height="40" width="172" src="https://platform.slack-edge.com/img/sign_in_with_slack.png" srcset="https://platform.slack-edge.com/img/sign_in_with_slack.png 1x, https://platform.slack-edge.com/img/sign_in_with_slack@2x.png 2x" />
+                </a>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+
+    <div id="lista" style="padding-top:20px" th:if="${session.username != null}" >
+        <div class="row">
+            <div class="col-md-2 detalle usuario" th:text="${session.nombre}" style="float:right"></div>
+
+            <div class="col-md-0" th:if="${session.avatar != null}" style="float:right; padding-left:0px">
+                <img th:src="${session.avatar}" style="border:5px solid #fff"/>
+            </div>
+        </div>
+    </div>
+
+<section class="contenido" th:if="${session.username != null}">
+
+
+
+        <div th:if="${not #lists.isEmpty(pedidos)}">
+
+            <h2 class="titulo">Qué comemos hoy?</h2>
+
+            <div th:each="pedido: ${pedidos}">
+                <div class="row">
+                    <div th:text="${pedido.restaurante}" class="col-md-8 detalle restaurante">Restaurante</div>
+                    <div class="col-md-3" style="padding-top:15px">
+                        <button type="button" class="btn-square btn-outlined btn-theme btn-lg" data-target="#confirm-pedido"
+                            data-toggle="modal"
+                                th:attr="data-pedido=${pedido.id}, data-restaurante=${pedido.restaurante}">
+                          <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Me apunto!
+                        </button>
+                    </div>
+
+                </div>
+
+                <div class="row" style="margin-top:20px">
+
+                    <div th:each="usuario: ${pedido.personas}" class="col-md-12" style="margin-top:10px">
+
+                        <div class="row">
+                            <div class="col-md-1" th:if="${usuario.avatar != null}" style="padding-right:0px">
+                                <img th:src="${usuario.avatar}" style="border:5px solid #fff"/>
+                            </div>
+                            <div class="col-md-10 detalle usuario" th:text="${usuario.nombre}" style="padding-left:0px"></div>
+
+                        </div>
+
+                    </div>
+
+
+                </div>
+            </div>
+
+
+
+        </div>
+
+
+        <div th:if="${#lists.isEmpty(pedidos)}">
+
+            <h2 class="titulo titulo-small">Nadie quiere pedir comida todavía.</h2>
+
+            <div class="row" style="text-align: center;">
+                <div class="col-md-12" style="padding-top:15px;">
+                    <button type="button" class="btn-square btn-outlined btn-theme btn-lg" data-target="#nuevo-pedido"
+                            data-toggle="modal">
+                         Quieres ser el primero?
+                    </button>
+                </div>
+
+            </div>
+
+
+            <div class="modal fade" id="nuevo-pedido" tabindex="-1" role="dialog">
+                <div class="modal-dialog">
+                    <form th:action="@{'/pedido/add'}" method="post">
+                        <div class="modal-content">
+
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                <h4 class="modal-title">Crear nuevo pedido</h4>
+                            </div>
+
+                            <div class="modal-body">
+
+<!--
+                                <div class="form-group">
+                                    <label for="username">Nombre</label>
+                                    <input type="text" class="form-control" id="nombre" name="nombre" placeholder="Tu nombre" />
+                                </div>
+
+-->
+                                <div class="form-group">
+                                    <label for="restaurant">A dónde quieres pedir?</label>
+                                    <input type="text" class="form-control" id="restaurant" name="restaurant" placeholder="Restaurante" />
+                                </div>
+
+                                <input type="hidden" name="username" th:value="${session.username}"/>
+
+
+                                <!--<input type="hidden" name="_method" value="delete" />-->
+                                <!--<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />-->
+
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+                                <button type="submit" class="btn btn-success">Apúntame</button>
+                            </div>
+                        </div>
+                    </form>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+    <div class="modal fade" id="confirm-pedido" tabindex="-1" role="dialog">
+            <div class="modal-dialog">
+                <form th:action="@{'/pedido/adduser'}" method="post">
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Me apunto a pedir comida a <span id="restaurante"></span></h4>
+                    </div>
+
+<!--                    <div class="modal-body">-->
+
+<!--
+                            <div class="form-group">
+                                <label for="username">Nombre</label>
+                                <input type="text" class="form-control" id="username" name="username" placeholder="Tu nombre" />
+                            </div>
+-->
+
+                            <!--<input type="hidden" name="_method" value="delete" />-->
+                            <!--<input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />-->
+                            <input id="id" name="id" type="hidden" />
+                            <input type="hidden" name="username" th:value="${session.username}"/>
+
+
+<!--                    </div> -->
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success">Apúntame</button>
+                    </div>
+                </div>
+                </form>
+
+            </div>
+
+    </div>
+
+
+
+<footer class="text-center">
+    <div class="footer-above">
+        <div class="container">
+            <div class="row">
+            </div>
+        </div>
+    </div>
+    <div class="footer-below">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    Copyright &copy; Leandro Sabín 2016
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+<script>
+        $('#confirm-pedido').on('show.bs.modal', function(e) {
+            $(this).find('#id').val($(e.relatedTarget).data('pedido'));
+            $('#restaurante').html('<strong>' + $(e.relatedTarget).data('restaurante') + '</strong>');
+
+
+        })
+    </script>
+</body>
+</html>
